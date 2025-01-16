@@ -1,0 +1,89 @@
+<div class="container">
+    <div class="row">
+        <div class="search-container">
+            <input type="text" placeholder="Search..." (input)="onSearch($event)" />
+            <button type="button">
+              <span class="material-icons">search</span>
+            </button>
+          </div>
+    </div>
+    <div class="row" style="text-align: center;">
+        <div class="col"><button class="topbtns">Print Stock Take</button></div>
+        <div class="col"><button class="topbtns" (click)="tovCombos()">Combos</button></div>
+        <div class="col"><button class="topbtns" (click)="tovitems()">Items</button></div>
+    </div>
+    <br>
+    <div *ngFor="let item of items">
+      <p>{{ item.name }} - Physical: {{ item.purchase }}</p>
+    </div>
+    <div class="row">
+        <div class="table-container">
+          <div class="row">
+            <h1 style="color: aliceblue;">Items</h1>
+          </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Item Code</th>
+                  <th>Item Name</th>
+                  <th>Total</th>
+                  <th>Actual</th>
+                  <th>Variance</th>
+                  <th></th> <!--column for actions-->
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of filteredItems;  let i = index">
+                  <td>{{ item.code }}</td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.total }}</td>
+                  <td>{{ item.actual }}</td>
+                  <td>{{item.variance}}</td>
+                  <td>
+                    <!-- Buttons for edit and delete actions -->
+                    <button class="tablebtns" style="width: 80%;" (click)="manageItem(item)">Manage</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+    </div>
+    <div class="row">
+      <div class="table-container">
+        <div class="row">
+          <h1 style="color: aliceblue;">Combos</h1>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Comb ID</th>
+              <th>Name</th>
+           
+              <th></th> <!--column for actions-->
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let combo of combos">
+              <td>{{ combo.id }}</td>
+              <td>{{ combo.name }}</td>
+             
+              <td>
+                <!-- Buttons for edit and delete actions -->
+                <button class="tablebtns" style="width: 80%;" (click)="manageCombo(combo)">Manage</button>
+              </td>
+            </tr>
+            <tr *ngFor="let mi of menuItems">
+              <td>{{ mi.code }}</td>
+        <td>{{ mi.name }}</td>
+    
+        <td>
+          <!-- Buttons for edit and delete actions -->
+          <button class="tablebtns" style="width: 80%;" (click)="manageMenuItem(mi)">Manage</button>
+   
+        </td>
+      </tr>
+          </tbody>
+        </table>
+    </div>
+    
+</div>

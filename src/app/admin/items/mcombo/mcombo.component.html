@@ -1,0 +1,59 @@
+<div class="container">
+    <div class="row" style="text-align: right">
+      <button class="topbtns" (click)="goBack()">Back</button>
+    </div>
+    <br>
+    <div class="row">
+      <h1 class="ptitle" *ngIf="combo">{{ combo.name }}</h1>
+      <h3 class="ptitle"> <!-- Iterate through combo components to display item details -->
+        <span *ngFor="let comp of combo.comps">
+          {{ comp.code }} ({{ comp.units }} units)
+          <ng-container *ngIf="!isLastComponent(combo.comps, comp)">, </ng-container>
+        </span></h3>
+        <h1 class="ptitle" *ngIf="mi">{{ mi.name }}</h1>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button *ngIf="combo" class="addbtn"(click)="addComboEntry()">+New Entry</button>
+      </div>
+    </div>
+    <div class="row">
+      
+      <div class="table-container">
+      
+        <table *ngIf="combo && comboEntries ">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Units Sold</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody >
+            <tr *ngFor="let comboEntry of comboEntries">
+              <td>{{ comboEntry.date }}</td>
+              <td>{{ comboEntry.unitsSold }}</td>
+              
+              <td>
+                <!-- Buttons for delete action -->
+                <button class="tablebtns">Reason</button>
+              </td>
+            </tr>
+             <!-- New entry row (if available) -->
+          <tr *ngIf="newComboEntry">
+            <td>{{ newComboEntry.date }}</td>
+            <td>
+              <input class="tlbinp" [(ngModel)]="newComboEntry.unitsSold" placeholder="Units Sold" type="number" />
+            </td>
+           
+            <td>
+              <button class="tablebtns" (click)="saveComboEntry()">Save</button>
+              <br>
+              <button class="tablebtns" (click)="cancelComboEntry()">Cancel</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

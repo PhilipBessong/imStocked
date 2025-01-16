@@ -1,0 +1,116 @@
+<div
+  class="modal fade show"
+  tabindex="-1"
+  role="dialog"
+  style="display: block"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document" style="padding-top: 10%">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Combo</h5>
+        <button
+          type="button"
+          class="close ml-auto"
+          (click)="closeModal()"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <form (ngSubmit)="onSubmit()" #comboForm="ngForm">
+            <div class="form-group">
+              <label for="id">Combo ID:</label>
+              <input
+                style="margin-left: 7.5%"
+                type="text"
+                id="id"
+                name="id"
+                [(ngModel)]="newCombo.id"
+                placeholder="enter combo Id"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="name">Name:</label>
+              <input
+                style="margin-left: 6.5%"
+                type="text"
+                id="name"
+                name="name"
+                [(ngModel)]="newCombo.name"
+                placeholder="enter combo name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="price">Price:</label>
+              <input
+                style="margin-left: 5%"
+                type="number"
+                id="price"
+                name="price"
+                [(ngModel)]="newCombo.price"
+                placeholder="enter price"
+                required
+              />
+            </div>
+            <br>
+            <h4 style="color:#508CA4 ;">Items</h4>
+            <ul>
+              <li *ngFor="let item of newCombo.comps" style="margin: 2%;">
+                Code: {{ item.code }}, Units: {{ item.units }}
+                <button type="button"  class="btn" style="width: fit-content;padding: 2px;" (click)="removeComp(item)">Remove</button>
+              </li>
+            </ul>
+            <div class="form-group" >
+              <label for="comp-code">Comp Code:</label>
+              <select
+                style="margin-left: 2%; padding: 5px; border-radius: 5px;"
+                type="text"
+                id="comp-code"
+                name="compCode"
+                [(ngModel)]="newComp.code"
+                placeholder="Enter item code"
+                required
+              >
+              <option *ngFor="let item of items" [value]="item.code">{{ item.name }}</option>    
+            </select>
+              <label for="comp-units">Units:</label>
+              <input
+                style="margin-left: 2%"
+                type="number"
+                id="comp-units"
+                name="compUnits"
+                [(ngModel)]="newComp.units"
+                placeholder="Enter item units"
+                required
+              />
+            </div>
+            <div
+              class="form-group"
+              style="align-items: right; justify-content: right"
+            >
+              <button
+                type="button"
+                (click)="addComp()"
+                class="btn"
+                style="width: 65%; border-radius: 20px"
+              >
+                Add Component
+              </button>
+            </div>
+            <br />
+            <div>
+              <button type="submit" class="btn">Add Combo</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

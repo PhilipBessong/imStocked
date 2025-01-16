@@ -1,0 +1,51 @@
+<div class="container">
+    <div class="row" style="text-align: right">
+      <button class="topbtns" (click)="goBack()">Back</button>
+    </div>
+    <div class="row">
+      <h1 class="ptitle">COMBOS</h1>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="search-container">
+          <input type="text" placeholder="Search..." (input)="onSearch($event)" />
+          <button type="button">
+            <span class="material-icons">search</span>
+          </button>
+        </div>
+      </div>
+      <div class="col">
+          <button class="addbtn" (click)="toaddCombp()">+Add</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Combo Id</th>
+                <th>Combo Name</th>
+                <th></th>
+                <th></th>
+       
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let combo of filteredItems;  let i = index">
+                <td>{{ combo.id}}</td>
+                <td>{{ combo.name }}</td>
+                <td>
+                  <!-- Buttons for edit action -->
+                  <button class="tablebtns" (click)="editCombo(combo)" >Edit</button>
+                </td>
+                <td>
+                  <!-- Buttons for delete action -->
+                  <button class="tablebtns" (click)="deleteCombo(i)">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+  </div>
+  </div>
+  

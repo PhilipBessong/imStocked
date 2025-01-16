@@ -1,0 +1,65 @@
+<div class="container">
+  <div class="row" style="text-align: right">
+    <button class="topbtns" (click)="goBack()">Back</button>
+  </div>
+  <br>
+  <div class="row">
+    <h1 class="ptitle" *ngIf="item">{{ item.name }}</h1>
+  </div>
+  <div class="row">
+    <div class="col">
+      <button *ngIf="item" class="addbtn"(click)="addEntry()">+New Entry</button>
+    </div>
+   
+
+  </div>
+  <div class="row">
+    <div class="table-container">
+      <table *ngIf="item && item.entries">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Physical</th>
+            <th>Purchase</th>
+      
+            <th>Closing</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody >
+          <tr *ngFor="let entry of entries">
+            <td>{{ entry.date }}</td>
+            <td>{{ entry.physical }}</td>
+            <td>{{ entry.purchase }}</td>
+         
+            <td>{{ entry.closing }}</td>
+            <td>
+              <!-- Buttons for delete action -->
+              <button class="tablebtns">Reason</button>
+            </td>
+          </tr>
+           <!-- New entry row (if available) -->
+        <tr *ngIf="newEntry">
+          <td>{{ newEntry.date }}</td>
+          <td>
+            <input class="tlbinp" [(ngModel)]="newEntry.physical" placeholder="Physical" type="number" disabled="true" />
+          </td>
+          <td>
+            <input class="tlbinp" [(ngModel)]="newEntry.purchase" placeholder="Purchase" type="number"/>
+          </td>
+        
+          <td>
+            <input class="tlbinp" [(ngModel)]="newEntry.closing" placeholder="Closing" type="number" />
+          </td>
+          <td>
+            <button class="tablebtns" (click)="saveNewEntry()">Save</button>
+            <br>
+            <button class="tablebtns" (click)="cancelEntry()">Cancel</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    
+    </div>
+  </div>
+</div>

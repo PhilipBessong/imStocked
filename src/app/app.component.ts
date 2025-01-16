@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 @Component({
   selector: 'app-root',
   standalone: true,

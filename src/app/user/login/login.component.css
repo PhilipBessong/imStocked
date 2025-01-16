@@ -1,0 +1,42 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .welcome-message {
+    margin-bottom: 2rem; /* Space between welcome message and login card */
+  }
+  
+  .welcome-message h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #ffffff; /* Adjust color as needed */
+  }
+  
+  .card {
+    border-radius: 0.5rem;
+  }
+  
+  .card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .input-group {
+    position: relative;
+  }
+  
+  .input-group-text {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .input-group .fa-eye, .input-group .fa-eye-slash {
+    font-size: 1.25rem;
+    color: #6c757d;
+  }
+  

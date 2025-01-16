@@ -1,0 +1,46 @@
+<div class="modal fade show " tabindex="-1" role="dialog" style="display: block;" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="padding-top:10%;">
+      <div class="modal-content" >
+        <div class="modal-header">
+            <h5 class="modal-title">Add New Item</h5>
+            <button type="button" class="close ml-auto" (click)="closeModal()" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          
+        <div class="modal-body">
+          <div >
+            <div class="form-group">
+              <label>Item Code</label>
+              <input style="margin-left: 7.5%;" type="text" [(ngModel)]="newItem.code" placeholder="enter item code" required>
+            </div>
+            <br>
+            <div class="form-group">
+              <label for="itemName">Item Name</label>
+              <input style="margin-left: 6.5%;" type="text"  [(ngModel)]="newItem.name" placeholder="enter item name" required>
+            </div>
+            <br>
+            <div class="form-group">
+              <label for="itemPrice">Price (/case)</label>
+              <input style="margin-left: 5%;" type="number" [(ngModel)]="newItem.price" placeholder="Enter price" required>
+            </div>
+            <br>
+            <div class="form-group">
+              <label for="itemCases">Cases</label>
+              <input style="margin-left: 16%;" type="number" [(ngModel)]="newItem.cases" placeholder="Enter cases" required>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="itemUnits">Units</label>
+                <input style="margin-left: 17%;" type="number" [(ngModel)]="newItem.units" placeholder="Enter units" required>
+            </div>
+            <br>
+            <div>
+                <button (click)="addItem()" class="btn">Add Item</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
