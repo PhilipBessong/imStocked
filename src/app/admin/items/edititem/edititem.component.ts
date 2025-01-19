@@ -22,7 +22,11 @@ export class EdititemComponent implements OnInit {
   ngOnInit(): void {
     const code = this.route.snapshot.paramMap.get('code');
     if (code) {
-      this.item = this.itemService.getItemByCode(code)!;
+      this.itemService.getItemByCode(code).subscribe((item) => {
+        if (item) {
+          this.item = item;
+        }
+      });
     }
   }
    // Method to update the item

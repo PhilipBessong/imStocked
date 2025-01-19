@@ -12,6 +12,7 @@ import { EcomboComponent } from './admin/items/ecombo/ecombo.component';
 export const routes: Routes = [
     {path: '', component: LoginComponent},
     {path: 'home', component: HomeComponent},
+    {path: 'login', component: LoginComponent},
     {path: 'additem', component: AdditemComponent},
     {path: 'vitems', component: VitemsComponent},
     {path:'eitem/:code',component: EdititemComponent},

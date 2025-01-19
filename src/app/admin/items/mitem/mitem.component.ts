@@ -30,13 +30,14 @@ export class MitemComponent implements OnInit {
   ngOnInit() {
     const code = this.route.snapshot.paramMap.get('code');
     if (code) {
-      const item = this.itemService.getItemByCode(code);
-      if (item) {
-        this.item = item;
-        this.entries = item.entries || []; // Safe access
-      } else {
-        console.error(`Item with code ${code} not found`);
-      }
+      this.itemService.getItemByCode(code).subscribe(item => {
+        if (item) {
+          this.item = item;
+          this.entries = item.entries || []; // Safe access
+        } else {
+          console.error(`Item with code ${code} not found`);
+        }
+      });
     }  
   }
  

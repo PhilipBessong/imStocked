@@ -155,26 +155,26 @@ saveComboEntry(): void {
 updatePhysicalValues(entry: ComboEntry): void {
   // Update physical stock for each item in the combo
   for (const comp of this.combo.comps) {
-    const item = this.itemService.getItemByCode(comp.code); // Fetch item by code
+    this.itemService.getItemByCode(comp.code).subscribe(item => {
+      if (item) {
+        // Calculate the total units to be reduced based on the combo quantity
+        const totalReduction = entry.unitsSold * comp.units;
 
-    if (item) {
-      // Calculate the total units to be reduced based on the combo quantity
-      const totalReduction = entry.unitsSold * comp.units;
+        // Update the item's physical stock
+        item.physical = (item.physical || 0) - totalReduction;
 
-      // Update the item's physical stock
-      item.physical = (item.physical || 0) - totalReduction;
+        // Ensure that physical stock doesn't go negative
+        if (item.physical < 0) {
+          item.physical = 0;
+          console.warn(`Item ${item.code} stock went negative. Reset to 0.`);
+        }
 
-      // Ensure that physical stock doesn't go negative
-      if (item.physical < 0) {
-        item.physical = 0;
-        console.warn(`Item ${item.code} stock went negative. Reset to 0.`);
+        // Persist the updated item in the service
+        this.itemService.editItem(item);
+      } else {
+        console.error(`Item with code ${comp.code} not found in the service`);
       }
-
-      // Persist the updated item in the service
-      this.itemService.editItem(item);
-    } else {
-      console.error(`Item with code ${comp.code} not found in the service`);
-    }
+    });
   }
 }
 

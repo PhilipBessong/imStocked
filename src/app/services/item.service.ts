@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
+import { map } from 'rxjs/operators';
 import { BehaviorSubject, Observable } from 'rxjs';
-
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { initializeApp } from 'firebase/app';
+import { environment } from '../environment';
 export interface ItemEntry {
   date: string;  
   physical?:number      // Date of the stock take entry
@@ -55,8 +60,35 @@ export interface Combo{
   providedIn: 'root'
 })
 export class ItemService {
-  constructor() { }
-  
+  private app = initializeApp(environment.firebaseConfig);
+  constructor(private afAuth: AngularFireAuth, private firestore: AngularFirestore) { }
+    
+  // Sign up
+  async signUp(email: string, password: string, name: string) {
+    const userCredential = await this.afAuth.createUserWithEmailAndPassword(email, password);
+    await this.firestore.collection('users').doc(userCredential.user?.uid).set({
+      uid: userCredential.user?.uid,
+      email: userCredential.user?.email,
+      name
+    });
+  }
+
+  // Login
+  async login(email: string, password: string) {
+    return await this.afAuth.signInWithEmailAndPassword(email, password);
+  }
+
+  // Logout
+  async logout() {
+    return await this.afAuth.signOut();
+  }
+
+  // Get currently logged-in user
+  getUser() {
+    return this.afAuth.authState;
+  }
+    private collectionName = 'items';
+
   private items = new BehaviorSubject<Item[]>([
     {
       code: 'SM_HAKE',
@@ -352,48 +384,59 @@ private combos: Combo[] = [
   ];
 
 //item methods-----------------------------------------------------
-   // Add a new item
-   addItem(newItem: Item): void {
-    // Check if an item with the same code already exists
-    const existingItem = this.getItemByCode(newItem.code);
-    if (existingItem) {
-      console.log(`Item with code ${newItem.code} already exists.`);
-      return;
-    }
+ // Add a new item
+ addItem(newItem: Item): Promise<void> {
+  const itemRef = this.firestore.collection<Item>(this.collectionName).doc(newItem.code);
 
-    // Add the new item to the list
-    this.items.next([...this.items.getValue(), newItem]);
-    console.log(`Item with code ${newItem.code} added successfully.`);
-  }
-  //get all items
+  return new Promise((resolve, reject) => {
+    itemRef
+      .get()
+      .subscribe(doc => {
+        if (doc.exists) {
+          console.log(`Item with code ${newItem.code} already exists.`);
+          reject(`Item with code ${newItem.code} already exists.`);
+        } else {
+          itemRef
+            .set(newItem)
+            .then(() => {
+              console.log(`Item with code ${newItem.code} added successfully.`);
+              resolve();
+            })
+            .catch(error => {
+              console.error('Error adding item:', error);
+              reject(error);
+            });
+        }
+      }, error => {
+        console.error('Error checking item existence:', error);
+        reject(error);
+      });
+  });
+}
+
+  // Get all items
   getItems(): Observable<Item[]> {
-    return this.items.asObservable();
+    return this.firestore.collection<Item>(this.collectionName).valueChanges();
   }
-  //get item by code
-  getItemByCode(code: string): Item | undefined {
-    return this.items.getValue().find(item => item.code === code);
+
+  // Get item by code
+  getItemByCode(code: string): Observable<Item | undefined> {
+    return this.firestore
+      .collection<Item>(this.collectionName)
+      .doc<Item>(code)
+      .valueChanges();
   }
-  //edit item
-  editItem(updatedItem: Item): void {
-    const currentItems = this.items.getValue(); // Get current items
-    const index = currentItems.findIndex(item => item.code === updatedItem.code); // Find the index of the item
-    if (index !== -1) {
-      const updatedItems = [...currentItems]; // Create a copy of the current items
-      updatedItems[index] = updatedItem; // Update the specific item
-      this.items.next(updatedItems); // Emit the updated array
-    }
+
+  // Edit item
+  editItem(updatedItem: Item): Promise<void> {
+    const itemRef = this.firestore.collection<Item>(this.collectionName).doc(updatedItem.code);
+    return itemRef.update(updatedItem);
   }
-  //delete item
-  deleteItem(code: string): void {
-    const index = this.items.getValue().findIndex(item => item.code === code);
-    if (index !== -1) {
-      const updatedItems = this.items.getValue().slice();
-      updatedItems.splice(index, 1);
-      this.items.next(updatedItems);
-      console.log(`Item with code ${code} deleted successfully.`);
-    } else {
-      console.log(`Item with code ${code} not found.`);
-    }
+
+  // Delete item
+  deleteItem(code: string): Promise<void> {
+    const itemRef = this.firestore.collection<Item>(this.collectionName).doc(code);
+    return itemRef.delete();
   }
   //Combo methods--------------------------------------------------
   // Add a new item

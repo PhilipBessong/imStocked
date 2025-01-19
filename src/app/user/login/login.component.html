@@ -10,15 +10,15 @@
       <div class="card shadow">
         <div class="card-body">
           <h3 class="card-title text-center mb-4">Login</h3>
-          <form (submit)="tohome($event)">
+          <form (ngSubmit)="onLogin()">
             <div class="mb-3">
               <label for="username" class="form-label">Username</label>
-              <input type="email" class="form-control" id="username" placeholder="Enter your username" required>
+              <input type="email" [(ngModel)]="email" class="form-control" id="username" placeholder="Enter your username" required>
             </div>
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
               <div class="input-group position-relative">
-                <input [type]="isPasswordVisible ? 'text' : 'password'" class="form-control" id="password" placeholder="Enter your password" required>
+                <input [type]="isPasswordVisible ? 'text' : 'password'"  [(ngModel)]="password" class="form-control" id="password" placeholder="Enter your password" required>
                 <span class="input-group-text" (click)="togglePassword()" style="cursor:pointer;">
                   <i [ngClass]="isPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                 </span>
