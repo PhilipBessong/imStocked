@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { environment } from './environment';
+import { environment } from '../environments/environment';
 import { LoginComponent } from './user/login/login.component';
 import { HomeComponent } from './admin/home/home.component';
 import { AdditemComponent } from './admin/items/additem/additem.component';

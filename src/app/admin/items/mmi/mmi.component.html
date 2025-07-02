@@ -1,0 +1,53 @@
+<div class="container">
+    <div class="row" style="text-align: right">
+      <button class="topbtns" (click)="goBack()">Back</button>
+    </div>
+    <br>
+    <div class="row">
+      <h1 class="ptitle" *ngIf="mi">{{ mi.name }}</h1>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button *ngIf="mi" class="addbtn"(click)="addMiEntry()">+New Entry</button>
+      </div>
+    </div>
+    <div class="row">
+      
+      <div class="table-container">
+      
+        <table *ngIf="mi && miEntries ">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Units Sold</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody >
+            <tr *ngFor="let miEntry of miEntries">
+              <td>{{ miEntry.date }}</td>
+              <td>{{ miEntry.unitsSold }}</td>
+              
+              <td>
+                <!-- Buttons for delete action -->
+                <button class="tablebtns">Reason</button>
+              </td>
+            </tr>
+             <!-- New entry row (if available) -->
+          <tr *ngIf="newMiEntry">
+            <td>{{ newMiEntry.date }}</td>
+            <td>
+              <input class="tlbinp" [(ngModel)]="newMiEntry.unitsSold" placeholder="Units Sold" type="number" />
+            </td>
+           
+            <td>
+              <button class="tablebtns" (click)="saveMiEntry()">Save</button>
+              <br>
+              <button class="tablebtns" (click)="cancelMiEntry()">Cancel</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

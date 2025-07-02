@@ -26,7 +26,11 @@ export class EcomboComponent {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.combo = this.itemService.getComboById(id)!;
+      this.itemService.getComboById(id).subscribe(combo => {
+        if (combo) {
+          this.combo = combo;
+        }
+      });
     }
     this.itemService.getItems().subscribe(items => this.items = items);
 

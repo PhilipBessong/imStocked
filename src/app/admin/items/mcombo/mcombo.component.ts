@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom  } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
-import { ItemService, Item, MiEntry,Combo,ComboEntry } from '../../../services/item.service';
+import { ItemService, Item, MiEntry,Combo,ComboEntry, MenuItem } from '../../../services/item.service';
 @Component({
   selector: 'app-mcombo',
   standalone: true,
@@ -20,10 +20,10 @@ private subscription!: Subscription; // To manage the subscription
 filteredItems: Item[] = []; 
 items:Item[]=[];
 combos: Combo[] = [];
-menuItems: Item[] = [];
+menuItems: MenuItem[] = [];
 combo!:Combo;
 item!:Item;
-mi!:Item;
+mi!:MenuItem;
 comboEntries: ComboEntry[] = []; // Array to hold the entries
 miEntries: MiEntry[] = []; 
 newComboEntry: ComboEntry | null = null; // To hold the new entry object
@@ -42,24 +42,20 @@ isLastComponent(comps: { code: string; units: number }[], comp: { code: string; 
 ngOnInit() {
   const id = this.route.snapshot.paramMap.get('id');
   if (id) {
-    const combo = this.itemService.getComboById(id);
-    if (combo) {
-      this.combo = combo;
-      this.comboEntries = combo.comboEntries || []; // Safe access
-    } else {
-      console.error(`Combo with id ${id} not found`);
-    }
+   this.itemService.getComboById(id).subscribe((combo) => {
+        if (combo) this.combo = combo;
+      });
+
+      this.itemService.getComboEntries(id).subscribe((comboEntries) => {
+        this.comboEntries = comboEntries;
+      });
+
   }
-  const code = this.route.snapshot.paramMap.get('code');
-  if (code) {
-    const mi = this.itemService.getMiByCode(code);
-    if (mi) {
-      this.mi = mi;
-      this.miEntries = mi.miEntries || []; // Safe access
-    } else {
-      console.error(`Item with code ${code} not found`);
-    }
-  }
+ 
+     if (id) {
+      this.itemService.getMiByCode(id).subscribe((menuItem) => {
+        if (menuItem) this.mi = menuItem;
+      });}
  // Synchronize items with the service
  this.subscription = this.itemService.getItems().subscribe((items) => {
   this.items = items; // Assign the emitted items to the local array
@@ -121,53 +117,102 @@ badsaveComboEntry() {
   }
 }
 
-saveComboEntry(): void {
+async saveComboEntry(): Promise<void> {
   // Ensure the combo entry is valid
   if (!this.newComboEntry || this.newComboEntry.unitsSold <= 0) {
     console.error('Invalid combo entry or units sold');
     return;
   }
 
-  // Create a new combo entry with the sale information
+  // Create a new combo entry with the latest sale data
   const entry: ComboEntry = {
-    date: new Date().toISOString(), // Current date
+    date: new Date().toISOString(), // Use current date
     unitsSold: this.newComboEntry.unitsSold,
     reason: this.newComboEntry.reason || '', // Optional reason
   };
 
-  // Add the entry to the combo entries list
+   // Add entry to comboEntries (make sure it's initialized)
+  if (!this.comboEntries) this.comboEntries = [];
   this.comboEntries.push(entry);
 
-  // Update physical stock for each item in the combo using the helper method
-  this.updatePhysicalValues(entry);
 
-  // Persist the updated combo with new combo entries
-  this.itemService.editCombo({
-    ...this.combo,
-    comboEntries: this.comboEntries, // Update the combo entries with the new entry
-  });
+  // Update combo.unitsSold with the latest entry value
+  this.combo.unitsSold = entry.unitsSold;
+  if (!this.combo.comps) {
+    console.error('Combo components not found');
+    return;
+  }
 
-  // Clear the new combo entry fields after saving
-  this.newComboEntry = null;
-  console.log('Combo sold and entry recorded successfully:', entry);
+  try {
+    // Fetch all items **once**
+    const items = await firstValueFrom(this.itemService.getItems());
+
+    // Update only the affected items in the combo
+    const updatedItems = items.map((item) => {
+      const comp = this.combo.comps.find((c) => c.code === item.code);
+      if (!comp) return item;
+      
+        const totalUnitsSold = comp.units * entry.unitsSold;
+        
+        const updatedPhysical = Math.max((item.physical ?? 0) - totalUnitsSold, 0);
+        const total = (item.total ?? 0) - totalUnitsSold;
+        const actual = (item.actual ?? 0) - totalUnitsSold;
+
+        return { 
+          ...item, 
+          physical: updatedPhysical,
+          sale: (item.sale ?? 0) + totalUnitsSold,
+          total, 
+          actual 
+        };
+     
+    });
+
+    // Await updates to ensure all item changes are saved
+    await Promise.all(
+      updatedItems.map((updatedItem) => this.itemService.editItem(updatedItem))
+    );
+    // Persist the updated combo with new combo entries and latest unitsSold
+    this.itemService.editCombo({
+      ...this.combo,
+      unitsSold: this.combo.unitsSold, // Ensure only the latest value is stored
+      comboEntries: this.comboEntries, // Save updated entries
+    });
+
+    // Save entry to Firestore
+    await this.itemService.addComboEntry(this.combo.id, entry);
+
+
+    // Clear the new combo entry fields after saving
+    this.newComboEntry = null;
+  } catch (error) {
+    console.error('Error updating items:', error);
+  }
 }
+
+
 // Helper method to update the physical stock for the items in the combo
 updatePhysicalValues(entry: ComboEntry): void {
+  if (!this.combo || !this.combo.comps) {
+    console.error('Combo or components are undefined.');
+    return;
+  }
+
   // Update physical stock for each item in the combo
   for (const comp of this.combo.comps) {
+    if (!comp || !comp.code) {
+      console.warn('Invalid component in combo.');
+      continue;
+    }
+
+    // Retrieve the item asynchronously
     this.itemService.getItemByCode(comp.code).subscribe(item => {
       if (item) {
         // Calculate the total units to be reduced based on the combo quantity
-        const totalReduction = entry.unitsSold * comp.units;
+        const totalReduction = entry.unitsSold * (comp.units || 0);
 
         // Update the item's physical stock
-        item.physical = (item.physical || 0) - totalReduction;
-
-        // Ensure that physical stock doesn't go negative
-        if (item.physical < 0) {
-          item.physical = 0;
-          console.warn(`Item ${item.code} stock went negative. Reset to 0.`);
-        }
+        item.physical = Math.max(0, (item.physical || 0) - totalReduction);
 
         // Persist the updated item in the service
         this.itemService.editItem(item);
@@ -177,6 +222,8 @@ updatePhysicalValues(entry: ComboEntry): void {
     });
   }
 }
+
+
 
 
 

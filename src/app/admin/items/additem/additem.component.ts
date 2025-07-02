@@ -36,7 +36,7 @@ export class AdditemComponent {
   }
 
  
-  addItem() {
+  async addItem() {
     // Perform calculations before adding the item
     this.newItem.physical = this.newItem.cases * this.newItem.units;
     this.newItem.total = (this.newItem.physical || 0) + (this.newItem.purchase || 0);
@@ -64,7 +64,7 @@ export class AdditemComponent {
     this.newItem.entries?.push(initEntry); // Add the entry to the item's entries
 
     // Add the item to the service
-    this.itemService.addItem(this.newItem);
+    await this.itemService.addItem(this.newItem);
   
     // Log the current list of items to the console
     console.log('Items created:', this.itemService.getItems());

@@ -1,0 +1,61 @@
+<div class="container">
+ <div class="row justify-content-end mb-2">
+    <div class="col-auto">
+      <button class="topbtns" (click)="goBack()">Back</button>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col">
+      <h1 class="ptitle">MENU ITEMS</h1>
+    </div>
+  </div>
+
+  <div class="row align-items-center mb-3">
+    <div class="col-8 col-sm-9">
+      <div class="search-container d-flex">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search..."
+          (input)="onSearch($event)"
+        />
+        <button type="button" class="btn btn-light ms-2">
+          <span class="material-icons">search</span>
+        </button>
+      </div>
+    </div>
+    <div class="col-4 col-sm-3 text-end">
+      <button class="addbtn" (click)="toaddMenuItem()">+Add</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Menu Item Id</th>
+              <th>Menu Item Name</th>
+              <th></th>
+              <th></th>
+     
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of filteredMenuItems;  let i = index">
+              <td>{{ item.id }}</td>
+              <td>{{ item.name }}</td>
+              <td>
+                <!-- Buttons for edit action -->
+                <button class="tablebtns" (click)="editMenuItem(item)" >Edit</button>
+              </td>
+              <td>
+                <!-- Buttons for delete action -->
+                <button class="tablebtns" (click)="deleteMenuItem(i)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+</div>
+</div>

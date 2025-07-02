@@ -9,6 +9,10 @@ import { VcombosComponent } from './admin/items/vcombos/vcombos.component';
 import { McomboComponent } from './admin/items/mcombo/mcombo.component';
 import { AddcomboComponent } from './admin/items/addcombo/addcombo.component';
 import { EcomboComponent } from './admin/items/ecombo/ecombo.component';
+import { VmiComponent } from './admin/items/vmi/vmi.component';
+import { MmiComponent } from './admin/items/mmi/mmi.component';
+import { AddmiComponent } from './admin/items/addmi/addmi.component';
+import { EmiComponent } from './admin/items/emi/emi.component';
 export const routes: Routes = [
     {path: '', component: LoginComponent},
     {path: 'home', component: HomeComponent},
@@ -20,7 +24,11 @@ export const routes: Routes = [
     {path:'mcombo/:id',component: McomboComponent},
     {path:'vcombos', component: VcombosComponent},
     {path:'addcombo', component: AddcomboComponent},
-    {path: 'ecombo/:id', component: EcomboComponent}
+    {path: 'ecombo/:id', component: EcomboComponent},
+    {path:'mmi/:id',component: MmiComponent},
+    {path:'emi/:id',component: EmiComponent},
+    {path:'addmi',component: AddmiComponent},
+    {path:'vmi',component: VmiComponent}
 
 
 ];

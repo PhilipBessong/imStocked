@@ -1,14 +1,28 @@
+.topbtns,
+.addbtn {
+  color: white;
+  border-radius: 20px;
+  background-color: #508CA4;
+  font-size: 1rem; /* use relative units */
+  border: none;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  width: auto;
+  min-width: 100px;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
 .topbtns {
-    color: white;
-    border-radius: 20px;
-    background-color: #508CA4;
-    font-size: x-large;
-    border: none;
-   padding: 1%;
-    margin: 2%;
-    margin-left: 90%;
-    width: 10%;
-  }
+  float: right;
+}
+
+.addbtn {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}
+
 .ptitle{
     text-align: center;
     color: white; 
@@ -48,18 +62,7 @@
     font-size: 24px;
     color: white;
   }
-  .addbtn {
-    color: white;
-    border-radius: 20px;
-    background-color: #508CA4;
-    font-size: x-large;
-    border: none;
-    padding: 1%;
-    margin: 2%;
-    margin-top: 5%;
-    margin-left: 50%;
-    width: 30%;
-  }
+  
 
   .table-container {
     width: 100%;
@@ -128,3 +131,22 @@
   td{
     color: #508CA4;
   }
+  @media (max-width: 576px) {
+  .topbtns,
+  .addbtn {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.8rem;
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-container input,
+  .search-container button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}

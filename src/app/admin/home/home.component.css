@@ -38,12 +38,36 @@
   color: white;
   border-radius: 20px;
   background-color: #508CA4;
-  font-size: x-large;
+  font-size: 1.2rem;
   border: none;
-  padding: 2%;
-  width: 50%;
+  padding: 0.6rem 1rem;
   white-space: nowrap;
+  width: 100%;
+  transition: font-size 0.2s ease;
 }
+
+/* Responsive text scaling */
+@media (max-width: 768px) {
+  .topbtns {
+    font-size: 1rem;
+    padding: 0.5rem 0.8rem;
+  }
+   .tablebtns {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbtns {
+    font-size: 0.9rem;
+  }
+   .tablebtns {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
 
 .table-container {
   width: 100%;
@@ -105,8 +129,10 @@ tbody tr:last-child td:last-child {
   color: white;
   border-radius: 20px;
   background-color: #508CA4;
-  font-size: large;
+  font-size: 1rem;
   border: none;
-  padding: 2%;
-  width: 40%;
+  padding: 0.5rem 1rem;
+  width: 100%; /* Let it fill the available container (like <td>) */
+  white-space: nowrap;
+  transition: font-size 0.2s ease, padding 0.2s ease;
 }

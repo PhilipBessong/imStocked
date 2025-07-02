@@ -2,7 +2,7 @@ import { Component, OnInit  } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';  // Import RouterModule
 import { CommonModule } from '@angular/common';
-import { ItemService,Combo,Item } from '../../../services/item.service';
+import { ItemService,Combo,Item, MenuItem } from '../../../services/item.service';
 @Component({
   selector: 'app-vcombos',
   standalone: true,
@@ -21,14 +21,18 @@ export class VcombosComponent implements OnInit{
     this.router.navigate(['/home']);
   }
   combos: Combo[] = [];
-  mi: Item[]=[];
+  mi: MenuItem[]=[];
   filteredItems: Combo[] = []; 
 
   ngOnInit() {
-    this.combos = this.itemService.getCombos();
-    this.mi = this.itemService.getMenuitems();
-    this.filteredItems = [...this.combos];
-    console.log(this.combos);
+    this.itemService.getCombos().subscribe(combos => {
+      this.combos = combos;
+      this.filteredItems = [...this.combos];
+      console.log(this.combos);
+    });
+    this.itemService.getMenuitems().subscribe(mi => {
+      this.mi = mi;
+    });
   }
   
   onSearch(event: any) {

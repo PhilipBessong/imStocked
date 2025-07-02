@@ -1,18 +1,33 @@
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { initializeApp } from 'firebase/app';
-import { environment } from '../environment';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '@angular/fire/auth';
+import { Router } from '@angular/router';
+import {
+  Firestore,
+  collection,
+  collectionData,
+  getDoc,
+  addDoc,
+  doc,
+  deleteDoc,
+  updateDoc,
+  setDoc,
+  docData,
+} from '@angular/fire/firestore';
+
+export interface User {
+  username: string;
+  password: string;
+}
+
 export interface ItemEntry {
-  date: string;  
-  physical?:number      // Date of the stock take entry
-  sale?: number;      // Sales recorded in the stock take
-  purchase?: number;  // Purchases recorded in the stock take
+  date: string;
+  physical?: number; // Date of the stock take entry
+  sale?: number; // Sales recorded in the stock take
+  purchase?: number; // Purchases recorded in the stock take
   closing?: number;
-  reason: string;       // Closing recorded in the stock take
+  reason: string; // Closing recorded in the stock take
 }
 export interface Item {
   code: string;
@@ -26,26 +41,24 @@ export interface Item {
   closing?: number;
   total?: number;
   actual?: number;
-  variance?:number;
+  variance?: number;
   dateMade?: string;
   entries?: ItemEntry[];
   miEntries?: MiEntry[];
 }
-export interface ComboEntry{
-
-  date: string;  
+export interface ComboEntry {
+  date: string;
   unitsSold: number;
-  reason?: string;  
-       // Closing recorded in the stock take
+  reason?: string;
+  // Closing recorded in the stock take
 }
-export interface MiEntry{
-
-  date: string;  
+export interface MiEntry {
+  date: string;
   unitsSold: number;
-  reason?: string;  
-       // Closing recorded in the stock take
+  reason?: string;
+  // Closing recorded in the stock take
 }
-export interface Combo{
+export interface Combo {
   id: string;
   name: string;
   price: number;
@@ -56,39 +69,56 @@ export interface Combo{
   }>;
   comboEntries?: ComboEntry[];
 }
+export interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+  unitsSold?: number;
+  miEntries?: MiEntry[];
+}
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ItemService {
-  private app = initializeApp(environment.firebaseConfig);
-  constructor(private afAuth: AngularFireAuth, private firestore: AngularFirestore) { }
-    
-  // Sign up
-  async signUp(email: string, password: string, name: string) {
-    const userCredential = await this.afAuth.createUserWithEmailAndPassword(email, password);
-    await this.firestore.collection('users').doc(userCredential.user?.uid).set({
-      uid: userCredential.user?.uid,
-      email: userCredential.user?.email,
-      name
-    });
+  //private app = initializeApp(environment.firebaseConfig);
+  private itemsCollection;
+  private combosCollection;
+  private menuItemsCollection;
+  constructor(private firestore: Firestore,private auth: Auth, private router: Router) {
+    this.itemsCollection = collection(this.firestore, 'items');
+    this.menuItemsCollection = collection(this.firestore, 'menuItems');
+    this.combosCollection = collection(this.firestore, 'combos');
+  }
+  async loginUser(username: string, password: string): Promise<boolean> {
+    try {
+      await signInWithEmailAndPassword(this.auth, username, password);
+      return true;
+    } catch (error) {
+      console.error('Login error', error);
+      return false;
+    }
   }
 
-  // Login
-  async login(email: string, password: string) {
-    return await this.afAuth.signInWithEmailAndPassword(email, password);
+  async registerUser(username: string, password: string): Promise<void> {
+    await createUserWithEmailAndPassword(this.auth, username, password);
   }
 
   // Logout
   async logout() {
-    return await this.afAuth.signOut();
+    return await this.auth.signOut();
   }
 
   // Get currently logged-in user
-  getUser() {
-    return this.afAuth.authState;
-  }
-    private collectionName = 'items';
+  //getUser() {
+  //return this.afAuth.authState;
+  //}
 
+  private users = new BehaviorSubject<User[]>([
+    { username: 'admin', password: 'admin123' },
+    { username: 'user1', password: 'password1' },
+    { username: 'guest', password: 'guest123' },
+  ]);
+  private currentUser = new BehaviorSubject<User | null>(null);
   private items = new BehaviorSubject<Item[]>([
     {
       code: 'SM_HAKE',
@@ -104,7 +134,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'MD_HAKE',
@@ -120,7 +150,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'LG_HAKE',
@@ -136,7 +166,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'CAL_RINGS',
@@ -152,7 +182,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'FISH_CAKE',
@@ -168,7 +198,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'MINI_LOAF',
@@ -184,7 +214,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'MD_CHK_RUS',
@@ -200,7 +230,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'CHK_STRIPS',
@@ -216,7 +246,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'SM_RUS',
@@ -232,7 +262,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'MD_RUS',
@@ -248,7 +278,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'LG_RUS',
@@ -264,7 +294,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'XL_RUS',
@@ -280,7 +310,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'MD_CHS_GRILL',
@@ -296,7 +326,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'SM_VIENNA',
@@ -312,7 +342,7 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
+      entries: [],
     },
     {
       code: 'CHS_COCKTAIL',
@@ -328,154 +358,541 @@ export class ItemService {
       actual: 0,
       variance: 0,
       dateMade: '2024-11-18',
-      entries: []
-    }
-]);
+      entries: [],
+    },
+  ]);
 
-
-private combos: Combo[] = [
-  { id: 'CMB_001', name: 'Combo 1', price: 40.0, comps: [{ code: 'SM_HAKE', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_002', name: 'Combo 2', price: 60.0, comps: [{ code: 'MD_HAKE', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_003', name: 'Combo 3', price: 80.0, comps: [{ code: 'SM_HAKE', units: 2 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_004', name: 'Combo 4', price: 70.0, comps: [{ code: 'SM_RUS', units: 2 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_005', name: 'Combo 5', price: 90.0, comps: [{ code: 'MD_HAKE', units: 2 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_006', name: 'Combo 6', price: 75.0, comps: [{ code: 'SM_HAKE', units: 1 }, { code: 'MD_RUS', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_007', name: 'Combo 7', price: 50.0, comps: [{ code: 'MD_CHS_GRILL', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_008', name: 'Combo 8', price: 45.0, comps: [{ code: 'SM_VIENNA', units: 2 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_009', name: 'Combo 9', price: 85.0, comps: [{ code: 'SM_HAKE', units: 1 }, { code: 'SM_RUS', units: 1 }, { code: 'MINI_LOAF', units: 2 }], unitsSold: 0 },
-  { id: 'CMB_010', name: 'Combo 10', price: 55.0, comps: [{ code: 'SM_RUS', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_011', name: 'Combo 11', price: 65.0, comps: [{ code: 'CAL_RINGS', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_012', name: 'Combo 12', price: 75.0, comps: [{ code: 'CHK_STRIPS', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_013', name: 'Combo 13 - Big Box Deal', price: 150.0, comps: [{ code: 'MD_CHIPS', units: 1 }, { code: 'MINI_LOAF', units: 2 }, { code: 'CHS_COCKTAIL', units: 10 }], unitsSold: 0 },
-  { id: 'CMB_014', name: 'Combo 14', price: 45.0, comps: [{ code: 'SM_RUS', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_015', name: 'Combo 15', price: 50.0, comps: [{ code: 'SM_HAKE', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_016', name: 'Combo 16', price: 60.0, comps: [{ code: 'FISH_CAKE', units: 2 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_017', name: 'Combo 17', price: 35.0, comps: [{ code: 'SM_VIENNA', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_018', name: 'Combo 18', price: 50.0, comps: [{ code: 'CHS_COCKTAIL', units: 5 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_019', name: 'Combo 19 - Max Meal', price: 120.0, comps: [{ code: 'SM_HAKE', units: 2 }, { code: 'SM_RUS', units: 2 }, { code: 'SM_VIENNA', units: 2 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_020', name: 'Combo 20 - Sailors Choice', price: 135.0, comps: [{ code: 'SM_HAKE', units: 2 }, { code: 'FISH_CAKE', units: 2 }, { code: 'CAL_RINGS', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_021', name: 'Combo 21 - Sausage Selection', price: 125.0, comps: [{ code: 'SM_RUS', units: 2 }, { code: 'SM_VIENNA', units: 2 }, { code: 'CHS_COCKTAIL', units: 5 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_022', name: 'Combo 22 - Meal for 4', price: 200.0, comps: [{ code: 'SM_RUS', units: 4 }, { code: 'SM_HAKE', units: 4 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_023', name: 'Russian Roll', price: 20.0, comps: [{ code: 'SM_RUS', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-  { id: 'CMB_024', name: 'Hot Dog', price: 15.0, comps: [{ code: 'SM_VIENNA', units: 1 }, { code: 'MINI_LOAF', units: 1 }], unitsSold: 0 },
-];
-
-  private menuItems: Item[] = [
-    { code: 'SM_CHIPS', name: 'Small Chips', price: 20.0, cases: 10, units: 100 },
-    { code: 'MD_CHIPS', name: 'Medium Chips', price: 30.0, cases: 10, units: 100 },
-    { code: 'LG_CHIPS', name: 'Large Chips', price: 40.0, cases: 10, units: 100 },
-    { code: 'MAX_CHIPS', name: 'Max Chips', price: 50.0, cases: 10, units: 100 },
-    { code: 'CHK_STRIPS', name: 'Chicken Strip', price: 10.0, cases: 10, units: 100 },
-    { code: 'CHK_STRIPS_3', name: '3 Chicken Strips', price: 25.0, cases: 10, units: 100 },
-    { code: 'MD_CHS_GRILL', name: 'Medium Cheese Griller', price: 25.0, cases: 10, units: 100 },
-    { code: 'SM_HAKE', name: 'Small Hake', price: 15.0, cases: 10, units: 100 },
-    { code: 'MD_HAKE', name: 'Medium Hake', price: 25.0, cases: 10, units: 100 },
-    { code: 'LG_HAKE', name: 'Large Hake', price: 35.0, cases: 10, units: 100 },
-    { code: 'CAL_RINGS', name: 'Half Calamari Rings', price: 30.0, cases: 10, units: 100 },
-    { code: 'FULL_CAL_RINGS', name: 'Full Calamari Rings', price: 60.0, cases: 10, units: 100 },
-    { code: 'FISH_CAKE', name: 'Fish Cake', price: 10.0, cases: 10, units: 100 },
-    { code: 'MINI_LOAF', name: 'Mini Loaf', price: 15.0, cases: 10, units: 100 },
-    { code: 'SM_RUS', name: 'Small Russian', price: 20.0, cases: 10, units: 100 },
-    { code: 'MD_RUS', name: 'Medium Russian', price: 25.0, cases: 10, units: 100 },
-    { code: 'LG_RUS', name: 'Large Russian', price: 30.0, cases: 10, units: 100 },
-    { code: 'XL_RUS', name: 'Extra Large Russian', price: 35.0, cases: 10, units: 100 },
-    { code: 'SM_VIENNA', name: 'Small Vienna', price: 10.0, cases: 10, units: 100 },
-    { code: 'CHS_COCKTAIL', name: 'Cheesy Cocktail Viennas', price: 15.0, cases: 10, units: 100 },
+  private combos: Combo[] = [
+    {
+      id: 'CMB_001',
+      name: 'Combo 1',
+      price: 40.0,
+      comps: [
+        { code: 'SM_HAKE', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_002',
+      name: 'Combo 2',
+      price: 60.0,
+      comps: [
+        { code: 'MD_HAKE', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_003',
+      name: 'Combo 3',
+      price: 80.0,
+      comps: [
+        { code: 'SM_HAKE', units: 2 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_004',
+      name: 'Combo 4',
+      price: 70.0,
+      comps: [
+        { code: 'SM_RUS', units: 2 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_005',
+      name: 'Combo 5',
+      price: 90.0,
+      comps: [
+        { code: 'MD_HAKE', units: 2 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_006',
+      name: 'Combo 6',
+      price: 75.0,
+      comps: [
+        { code: 'SM_HAKE', units: 1 },
+        { code: 'MD_RUS', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_007',
+      name: 'Combo 7',
+      price: 50.0,
+      comps: [
+        { code: 'MD_CHS_GRILL', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_008',
+      name: 'Combo 8',
+      price: 45.0,
+      comps: [
+        { code: 'SM_VIENNA', units: 2 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_009',
+      name: 'Combo 9',
+      price: 85.0,
+      comps: [
+        { code: 'SM_HAKE', units: 1 },
+        { code: 'SM_RUS', units: 1 },
+        { code: 'MINI_LOAF', units: 2 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_010',
+      name: 'Combo 10',
+      price: 55.0,
+      comps: [
+        { code: 'SM_RUS', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_011',
+      name: 'Combo 11',
+      price: 65.0,
+      comps: [
+        { code: 'CAL_RINGS', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_012',
+      name: 'Combo 12',
+      price: 75.0,
+      comps: [
+        { code: 'CHK_STRIPS', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_013',
+      name: 'Combo 13 - Big Box Deal',
+      price: 150.0,
+      comps: [
+        { code: 'MD_CHIPS', units: 1 },
+        { code: 'MINI_LOAF', units: 2 },
+        { code: 'CHS_COCKTAIL', units: 10 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_014',
+      name: 'Combo 14',
+      price: 45.0,
+      comps: [
+        { code: 'SM_RUS', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_015',
+      name: 'Combo 15',
+      price: 50.0,
+      comps: [
+        { code: 'SM_HAKE', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_016',
+      name: 'Combo 16',
+      price: 60.0,
+      comps: [
+        { code: 'FISH_CAKE', units: 2 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_017',
+      name: 'Combo 17',
+      price: 35.0,
+      comps: [
+        { code: 'SM_VIENNA', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_018',
+      name: 'Combo 18',
+      price: 50.0,
+      comps: [
+        { code: 'CHS_COCKTAIL', units: 5 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_019',
+      name: 'Combo 19 - Max Meal',
+      price: 120.0,
+      comps: [
+        { code: 'SM_HAKE', units: 2 },
+        { code: 'SM_RUS', units: 2 },
+        { code: 'SM_VIENNA', units: 2 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_020',
+      name: 'Combo 20 - Sailors Choice',
+      price: 135.0,
+      comps: [
+        { code: 'SM_HAKE', units: 2 },
+        { code: 'FISH_CAKE', units: 2 },
+        { code: 'CAL_RINGS', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_021',
+      name: 'Combo 21 - Sausage Selection',
+      price: 125.0,
+      comps: [
+        { code: 'SM_RUS', units: 2 },
+        { code: 'SM_VIENNA', units: 2 },
+        { code: 'CHS_COCKTAIL', units: 5 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_022',
+      name: 'Combo 22 - Meal for 4',
+      price: 200.0,
+      comps: [
+        { code: 'SM_RUS', units: 4 },
+        { code: 'SM_HAKE', units: 4 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_023',
+      name: 'Russian Roll',
+      price: 20.0,
+      comps: [
+        { code: 'SM_RUS', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
+    {
+      id: 'CMB_024',
+      name: 'Hot Dog',
+      price: 15.0,
+      comps: [
+        { code: 'SM_VIENNA', units: 1 },
+        { code: 'MINI_LOAF', units: 1 },
+      ],
+      unitsSold: 0,
+    },
   ];
 
-//item methods-----------------------------------------------------
- // Add a new item
- addItem(newItem: Item): Promise<void> {
-  const itemRef = this.firestore.collection<Item>(this.collectionName).doc(newItem.code);
+  /*private menuItems: MenuItem[] = [
+    {
+      id: 'SM_CHIPS',
+      name: 'Small Chips',
+      price: 20.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'MD_CHIPS',
+      name: 'Medium Chips',
+      price: 30.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'LG_CHIPS',
+      name: 'Large Chips',
+      price: 40.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'MAX_CHIPS',
+      name: 'Max Chips',
+      price: 50.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'CHK_STRIPS',
+      name: 'Chicken Strip',
+      price: 10.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'CHK_STRIPS_3',
+      name: '3 Chicken Strips',
+      price: 25.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'MD_CHS_GRILL',
+      name: 'Medium Cheese Griller',
+      price: 25.0,
+      unitsSold: 0,
+    },
+    { id: 'SM_HAKE', name: 'Small Hake', price: 15.0, unitsSold: 0 },
+    {
+      id: 'MD_HAKE',
+      name: 'Medium Hake',
+      price: 25.0,
+      unitsSold: 0,
+    },
+    { id: 'LG_HAKE', name: 'Large Hake', price: 35.0, unitsSold: 0 },
+    {
+      id: 'CAL_RINGS',
+      name: 'Half Calamari Rings',
+      price: 30.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'FULL_CAL_RINGS',
+      name: 'Full Calamari Rings',
+      price: 60.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'FISH_CAKE',
+      name: 'Fish Cake',
+      price: 10.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'MINI_LOAF',
+      name: 'Mini Loaf',
+      price: 15.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'SM_RUS',
+      name: 'Small Russian',
+      price: 20.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'MD_RUS',
+      name: 'Medium Russian',
+      price: 25.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'LG_RUS',
+      name: 'Large Russian',
+      price: 30.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'XL_RUS',
+      name: 'Extra Large Russian',
+      price: 35.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'SM_VIENNA',
+      name: 'Small Vienna',
+      price: 10.0,
+      unitsSold: 0,
+    },
+    {
+      id: 'CHS_COCKTAIL',
+      name: 'Cheesy Cocktail Viennas',
+      price: 15.0,
+      unitsSold: 0,
+    },
+  ];*/
+  private menuItems = new BehaviorSubject<MenuItem[]>([]);
 
-  return new Promise((resolve, reject) => {
-    itemRef
-      .get()
-      .subscribe(doc => {
-        if (doc.exists) {
-          console.log(`Item with code ${newItem.code} already exists.`);
-          reject(`Item with code ${newItem.code} already exists.`);
-        } else {
-          itemRef
-            .set(newItem)
-            .then(() => {
-              console.log(`Item with code ${newItem.code} added successfully.`);
-              resolve();
-            })
-            .catch(error => {
-              console.error('Error adding item:', error);
-              reject(error);
-            });
-        }
-      }, error => {
-        console.error('Error checking item existence:', error);
-        reject(error);
-      });
-  });
-}
+  // User Management
+ /* registerUser(newUser: User): void {
+    const currentUsers = this.users.getValue();
+    if (currentUsers.some((user) => user.username === newUser.username)) {
+      console.error('Username already exists.');
+      return;
+    }
+    this.users.next([...currentUsers, newUser]);
+  }
 
-  // Get all items
+  loginUser(username: string, password: string): boolean {
+    const user = this.users
+      .getValue()
+      .find((u) => u.username === username && u.password === password);
+    if (user) {
+      this.currentUser.next(user);
+      console.log(`User ${username} logged in successfully.`);
+      return true;
+    }
+    console.error('Invalid username or password.');
+    return false;
+  }
+
+  logoutUser(): void {
+    this.currentUser.next(null);
+  }*/
+
+  getCurrentUser() {
+    return this.currentUser.asObservable();
+  }
+
+  //item methods-----------------------------------------------------
+
+ 
+  // Get all items from Firestore
   getItems(): Observable<Item[]> {
-    return this.firestore.collection<Item>(this.collectionName).valueChanges();
+    return collectionData(this.itemsCollection, { idField: 'id' }).pipe(
+      map((items) => items.map((item) => item as Item))
+    );
+  }
+  // Add item to Firestore
+  async addItem(newItem: Item): Promise<void> {
+    try {
+      // Create a document reference with ID = newItem.code
+      const itemDocRef = doc(this.firestore, 'items', newItem.code);
+
+      // Save the item data at that document
+      await setDoc(itemDocRef, newItem);
+
+      console.log('Item added to Firestore with code as ID:', newItem.code);
+    } catch (err) {
+      console.error('Error adding item:', err);
+    }
   }
 
-  // Get item by code
   getItemByCode(code: string): Observable<Item | undefined> {
-    return this.firestore
-      .collection<Item>(this.collectionName)
-      .doc<Item>(code)
-      .valueChanges();
+    const itemDocRef = doc(this.firestore, 'items', code);
+    return docData(itemDocRef).pipe(
+      map((data) => {
+        if (data) {
+          return { code, ...data } as Item;
+        } else {
+          return undefined;
+        }
+      })
+    );
+  }
+  getItemEntries(code: string): Observable<ItemEntry[]> {
+    const entriesRef = collection(this.firestore, `items/${code}/entries`);
+    return collectionData(entriesRef, { idField: 'id' }) as Observable<
+      ItemEntry[]
+    >;
   }
 
-  // Edit item
-  editItem(updatedItem: Item): Promise<void> {
-    const itemRef = this.firestore.collection<Item>(this.collectionName).doc(updatedItem.code);
-    return itemRef.update(updatedItem);
+  addItemEntry(code: string, entry: ItemEntry): Promise<void> {
+    const entriesRef = collection(this.firestore, `items/${code}/entries`);
+    return addDoc(entriesRef, entry).then(() => {});
   }
 
-  // Delete item
-  deleteItem(code: string): Promise<void> {
-    const itemRef = this.firestore.collection<Item>(this.collectionName).doc(code);
-    return itemRef.delete();
+  // Edit item by Firestore document ID
+  async editItem(updatedItem: Item): Promise<void> {
+    try {
+      const itemDocRef = doc(this.itemsCollection, updatedItem.code); // Requires item.id
+      await updateDoc(itemDocRef, { ...updatedItem });
+      console.log(`Item ${updatedItem.code} updated.`);
+    } catch (err) {
+      console.error('Error updating item:', err);
+    }
+  }
+
+  // Delete item by Firestore document ID
+  async deleteItem(itemId: string): Promise<void> {
+    try {
+      const itemDocRef = doc(this.itemsCollection, itemId);
+      await deleteDoc(itemDocRef);
+      console.log(`Item with id ${itemId} deleted.`);
+    } catch (err) {
+      console.error('Error deleting item:', err);
+    }
   }
   //Combo methods--------------------------------------------------
   // Add a new item
-  addCombo(newCombo: Combo): void {
-    // Check if an item with the same code already exists
-    const existingCombo = this.getComboById(newCombo.id);
-    if (existingCombo) {
-      console.log(`Item with code ${newCombo.id} already exists.`);
+async addCombo(newCombo: Combo): Promise<void> {
+    const comboDocRef = doc(this.firestore, 'combos', newCombo.id);
+    const existing = await getDoc(comboDocRef);
+
+    if (existing.exists()) {
+      console.log(`Combo with ID ${newCombo.id} already exists.`);
       return;
     }
 
-    // Add the new item to the list
-    this.combos.push(newCombo);
-    console.log(`Item with code ${newCombo.id} added successfully.`);
+    await setDoc(comboDocRef, newCombo);
+    console.log(`Combo with ID ${newCombo.id} added to Firestore.`);
   }
-  //get all combos
-  getCombos(): Combo[] {
-    return this.combos;
+  // Get all Combos
+  getCombos(): Observable<Combo[]> {
+    return collectionData(this.combosCollection, { idField: 'id' }).pipe(
+      map((combos) => combos.map((combo) => combo as Combo))
+    );
   }
   //get combo by id
-  getComboById(id: string): Combo | undefined {
-    return this.combos.find(combo => combo.id === id);
+  getComboById(id: string): Observable<Combo | undefined> {
+    const comboDocRef = doc(this.firestore, 'combos', id);
+    return docData(comboDocRef).pipe(
+      map((data) => {
+        if (data) {
+          return { id, ...data } as Combo;
+        } else {
+          return undefined;
+        }
+      })
+    );
   }
   //edit combo
-  editCombo(updatedCombo: Combo): void {
-    const index = this.combos.findIndex(combo => combo.id === updatedCombo.id);
-    if (index !== -1) {
-      this.combos[index] = updatedCombo;
-    }
+async editCombo(updatedCombo: Combo): Promise<void> {
+  try {
+    const comboDocRef = doc(this.combosCollection, updatedCombo.id);
+    await updateDoc(comboDocRef, { ...updatedCombo });
+    console.log(`Combo ${updatedCombo.id} updated.`);
+  } catch (err) {
+    console.error('Error updating combo:', err);
   }
+}
   //delete combo
-  deleteCombo(id: string): void {
-    const index = this.combos.findIndex(combo => combo.id === id);
-    if (index !== -1) {
-      this.combos.splice(index, 1);
-      console.log(`Item with code ${id} deleted successfully.`);
-    } else {
-      console.log(`Item with code ${IDBRequest} not found.`);
-    }
+  async deleteCombo(id: string): Promise<void> {
+  try {
+    const comboDocRef = doc(this.combosCollection, id);
+    await deleteDoc(comboDocRef);
+    console.log(`Combo with ID ${id} deleted.`);
+  } catch (err) {
+    console.error('Error deleting combo:', err);
+  }
+}
+
+ getComboEntries(code: string): Observable<ComboEntry[]> {
+    const entriesRef = collection(this.firestore, `combos/${code}/entries`);
+    return collectionData(entriesRef, { idField: 'id' }) as Observable<
+      ComboEntry[]
+    >;
+  }
+
+   addComboEntry(code: string, entry: ComboEntry): Promise<void> {
+    const entriesRef = collection(this.firestore, `combos/${code}/entries`);
+    return addDoc(entriesRef, entry).then(() => {});
   }
 
   updatePhysicalValues(combo: Combo) {
@@ -494,41 +911,94 @@ private combos: Combo[] = [
 
   //menuitem methods--------------------------------------------------
   // Add a new item
-  addmenuitem(newMi: Item): void {
+  /*addmenuitem(newMi: MenuItem): void {
     // Check if an item with the same code already exists
-    const existingMi = this.getMiByCode(newMi.code);
+    const existingMi = this.getMiByCode(newMi.id);
     if (existingMi) {
-      console.log(`Item with code ${newMi.code} already exists.`);
+      console.log(`Item with code ${newMi.id} already exists.`);
       return;
     }
 
     // Add the new item to the list
     this.menuItems.push(newMi);
-    console.log(`Item with code ${newMi.code} added successfully.`);
-  }
-  //get all combos
-  getMenuitems(): Item[] {
-    return this.menuItems;
-  }
-  //get combo by id
-  getMiByCode(code: string): Item | undefined {
-    return this.menuItems.find(mi => mi.code === code);
-  }
-  //edit combo
-  editMi(updatedMi: Item): void {
-    const index = this.menuItems.findIndex(mi => mi.code === updatedMi.code);
-    if (index !== -1) {
-      this.menuItems[index] = updatedMi;
+    console.log(`Item with code ${newMi.id} added successfully.`);
+  }*/
+  async addMenuItem(newMi: MenuItem): Promise<void> {
+    try {
+      const itemDocRef = doc(this.menuItemsCollection, newMi.id);
+      const existing = await getDoc(itemDocRef);
+
+      if (existing.exists()) {
+        console.log(`Item with ID ${newMi.id} already exists.`);
+        return;
+      }
+
+      await setDoc(itemDocRef, newMi);
+      console.log(`Item with ID ${newMi.id} added to Firestore.`);
+    } catch (err) {
+      console.error('Error adding item:', err);
     }
   }
-  //delete combo
-  deleteMi(code: string): void {
-    const index = this.menuItems.findIndex(mi => mi.code === code);
+
+  getMenuitems(): Observable<MenuItem[]> {
+    return collectionData(this.menuItemsCollection, { idField: 'id' }).pipe(
+      map((menuItems) => menuItems.map((menuItem) => menuItem as MenuItem))
+    );
+  }
+  //get combo by id
+  /*getMiByCode(id: string): MenuItem | undefined {
+    return this.menuItems.find((mi) => mi.id === id);
+  }*/
+  getMiByCode(id: string): Observable<MenuItem | undefined> {
+    const itemDocRef = doc(this.firestore, 'menuItems', id);
+    return docData(itemDocRef).pipe(
+      map((data) => {
+        if (data) {
+          return { id, ...data } as MenuItem;
+        } else {
+          return undefined;
+        }
+      })
+    );
+  }
+  getmenuItemEntries(id: string): Observable<MiEntry[]> {
+    const entriesRef = collection(this.firestore, `menuItems/${id}/entries`);
+    return collectionData(entriesRef, { idField: 'id' }) as Observable<
+      MiEntry[]
+    >;
+  }
+  addMenuItemEntry(id: string, entry: MiEntry): Promise<void> {
+    const entriesRef = collection(this.firestore, `menuItems/${id}/entries`);
+    return addDoc(entriesRef, entry).then(() => {});
+  }
+ async editMi(updatedMi: MenuItem): Promise<void> {
+    try {
+      const itemDocRef = doc(this.menuItemsCollection, updatedMi.id); // Requires item.id
+      await updateDoc(itemDocRef, { ...updatedMi });
+      console.log(`Item ${updatedMi.id} updated.`);
+    } catch (err) {
+      console.error('Error updating item:', err);
+    }
+  }
+
+  //delete menu item
+  async deleteMenuItem(id: string): Promise<void> {
+  try {
+    const itemDocRef = doc(this.menuItemsCollection, id);
+    await deleteDoc(itemDocRef);
+    console.log(`Menu item with ID ${id} deleted.`);
+  } catch (err) {
+    console.error('Error deleting menu item:', err);
+  }
+}
+  
+  /*deleteMi(id: string): void {
+    const index = this.menuItems.findIndex((mi) => mi.id === id);
     if (index !== -1) {
       this.menuItems.splice(index, 1);
-      console.log(`Item with code ${code} deleted successfully.`);
+      console.log(`Item with code ${id} deleted successfully.`);
     } else {
       console.log(`Item with code ${IDBRequest} not found.`);
     }
-  }
+  }*/
 }

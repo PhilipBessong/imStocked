@@ -1,7 +1,7 @@
 <div class="container vh-100 d-flex flex-column justify-content-center align-items-center">
   <!-- Welcome message -->
   <div class="welcome-message text-center mb-4">
-    <h1>Welcome to imStock</h1> <!-- Corrected the dash to spaces -->
+    <h1>Welcome to imStock</h1>
   </div>
 
   <!-- Login card -->
@@ -10,22 +10,33 @@
       <div class="card shadow">
         <div class="card-body">
           <h3 class="card-title text-center mb-4">Login</h3>
-          <form (ngSubmit)="onLogin()">
+          <form (ngSubmit)="login()">
+            <!-- Username input -->
             <div class="mb-3">
               <label for="username" class="form-label">Username</label>
-              <input type="email" [(ngModel)]="email" class="form-control" id="username" placeholder="Enter your username" required>
+              <input type="email" [(ngModel)]="username" name="username" class="form-control" id="username" placeholder="enter username" required>
             </div>
+
+            <!-- Password input -->
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
               <div class="input-group position-relative">
-                <input [type]="isPasswordVisible ? 'text' : 'password'"  [(ngModel)]="password" class="form-control" id="password" placeholder="Enter your password" required>
+                <input [type]="isPasswordVisible ? 'text' : 'password'" [(ngModel)]="password" name="password" class="form-control" id="password" placeholder="enter password" required>
                 <span class="input-group-text" (click)="togglePassword()" style="cursor:pointer;">
                   <i [ngClass]="isPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                 </span>
               </div>
             </div>
+
+            <!-- Error message (if any) -->
+            <div *ngIf="errorMessage" class="text-danger text-center mb-3">
+              <small>{{ errorMessage }}</small>
+            </div>
+
+            <!-- Login button -->
             <button type="submit" class="btn btn-primary w-100">Login</button>
           </form>
+
         </div>
       </div>
     </div>

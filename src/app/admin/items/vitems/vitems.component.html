@@ -1,50 +1,60 @@
 <div class="container">
-  <div class="row" style="text-align: right">
-    <button class="topbtns" (click)="goBack()">Back</button>
+  <div class="row justify-content-end mb-2">
+    <div class="col-auto">
+      <button class="topbtns" (click)="goBack()">Back</button>
+    </div>
   </div>
-  <div class="row">
-    <h1 class="ptitle">ITEMS</h1>
-  </div>
-  <div class="row">
+
+  <div class="row mb-3">
     <div class="col">
-      <div class="search-container">
-        <input type="text" placeholder="Search..." (input)="onSearch($event)" />
-        <button type="button">
+      <h1 class="ptitle">ITEMS</h1>
+    </div>
+  </div>
+
+  <div class="row align-items-center mb-3">
+    <div class="col-8 col-sm-9">
+      <div class="search-container d-flex">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search..."
+          (input)="onSearch($event)"
+        />
+        <button type="button" class="btn btn-light ms-2">
           <span class="material-icons">search</span>
         </button>
       </div>
     </div>
-    <div class="col">
-        <button class="addbtn" (click)="toaddItem()">+Add</button>
+    <div class="col-4 col-sm-3 text-end">
+      <button class="addbtn" (click)="toaddItem()">+Add</button>
     </div>
   </div>
   <div class="row">
     <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Item Code</th>
-              <th>Item Name</th>
-              <th></th>
-              <th></th>
-     
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of filteredItems;  let i = index">
-              <td>{{ item.code}}</td>
-              <td>{{ item.name }}</td>
-              <td>
-                <!-- Buttons for edit action -->
-                <button class="tablebtns" (click)="editItem(item)" >Edit</button>
-              </td>
-              <td>
-                <!-- Buttons for delete action -->
-                <button class="tablebtns" (click)="deleteItem(i)">Delete</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredItems; let i = index">
+            <td>{{ item.code }}</td>
+            <td>{{ item.name }}</td>
+            <td>
+              <!-- Buttons for edit action -->
+              <button class="tablebtns" (click)="editItem(item)">Edit</button>
+            </td>
+            <td>
+              <!-- Buttons for delete action -->
+              <button class="tablebtns" (click)="deleteItem(i)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
