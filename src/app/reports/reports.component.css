@@ -1,0 +1,152 @@
+.topbtns,
+.addbtn {
+  color: white;
+  border-radius: 20px;
+  background-color: #508CA4;
+  font-size: 1rem; /* use relative units */
+  border: none;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  width: auto;
+  min-width: 100px;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.topbtns {
+  float: right;
+}
+
+.addbtn {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.ptitle{
+    text-align: center;
+    color: white; 
+}
+.search-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 5px;
+    width: 100%;
+    max-width: 400px;
+    margin: 5%;
+  }
+  
+  .search-container input[type="text"] {
+    border: none;
+    border-radius: 20px;
+    outline: none;
+    flex-grow: 1;
+    padding: 5px;
+    font-size: 16px;
+    color: #508CA4;
+  }
+  
+  .search-container input[type="text"]::placeholder {
+    color: #508CA4;
+  }
+  
+  .search-container button {
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  .search-container .material-icons {
+    font-size: 24px;
+    color: white;
+  }
+  
+
+  .table-container {
+    width: 100%;
+    margin: 20px auto;
+    border-collapse: separate; /* Ensure separation between borders */
+    border-spacing: 0; /* Ensure no gaps between cells */
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: separate; /* Use 'separate' to allow rounding */
+    border-radius: 20px; /* Round the corners of the table */
+    overflow: hidden; /* Ensure child elements don't overflow */
+    border: none; /* Remove borders */
+  }
+  
+  th, td {
+    padding: 8px;
+    text-align: center;
+    color: #508CA4;
+    border: none; /* Remove borders from individual cells */
+  }
+  
+  /* Specific styling for table headers */
+  th {
+    background-color: #508CA4;
+    color: white;
+    text-align: center;
+    border: none; /* Remove header borders */
+  }
+  
+  /* Specific styling for table rows */
+  tr {
+    background-color: white;
+  }
+  
+  /*tbody tr:hover {
+    background-color: #508CA4;
+  }*?
+  
+  /* Round the top-left and top-right corners of the first header cell */
+  thead tr:first-child th:first-child {
+    border-top-left-radius: 20px;
+  }
+  
+  thead tr:first-child th:last-child {
+    border-top-right-radius: 20px;
+  }
+  
+  /* Round the bottom-left and bottom-right corners of the last row's first and last cells */
+  tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 20px;
+  }
+  
+  tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 20px;
+  }
+  .tablebtns {
+    color: white;
+    border-radius: 20px;
+    background-color: #508CA4;
+    font-size: large;
+    border: none;
+    width: 40%;
+  }
+  td{
+    color: #508CA4;
+  }
+  @media (max-width: 576px) {
+  .topbtns,
+  .addbtn {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.8rem;
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-container input,
+  .search-container button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}

@@ -76,8 +76,9 @@ export class HomeComponent implements OnInit {
   tovMenuItems(){
     this.router.navigate(['/vmi']);
   }
-  // Method to add a new row to the table
-
+  toReports(){
+    this.router.navigate(['/reports']);
+  }
 
 
 

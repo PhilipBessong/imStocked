@@ -13,6 +13,7 @@ import { VmiComponent } from './admin/items/vmi/vmi.component';
 import { MmiComponent } from './admin/items/mmi/mmi.component';
 import { AddmiComponent } from './admin/items/addmi/addmi.component';
 import { EmiComponent } from './admin/items/emi/emi.component';
+import { ReportsComponent } from './reports/reports.component';
 export const routes: Routes = [
     {path: '', component: LoginComponent},
     {path: 'home', component: HomeComponent},
@@ -28,7 +29,6 @@ export const routes: Routes = [
     {path:'mmi/:id',component: MmiComponent},
     {path:'emi/:id',component: EmiComponent},
     {path:'addmi',component: AddmiComponent},
-    {path:'vmi',component: VmiComponent}
-
-
+    {path:'vmi',component: VmiComponent},
+    {path:'reports',component: ReportsComponent}
 ];

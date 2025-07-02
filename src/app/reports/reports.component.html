@@ -1,0 +1,21 @@
+<div class="container">
+    <div class="row justify-content-end mb-2">
+    <div class="col-auto">
+      <button class="topbtns" (click)="goBack()">Back</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="search-container">
+      <input type="text" placeholder="Search..." (input)="onSearch($event)" />
+      <button type="button">
+        <span class="material-icons">search</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="row text-center">
+    <div class="col-6 col-sm-3 mb-2">
+      <button class="topbtns w-100">Print Stock</button>
+    </div>
+   
+  </div>

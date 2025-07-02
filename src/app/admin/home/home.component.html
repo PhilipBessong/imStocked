@@ -7,22 +7,24 @@
       </button>
     </div>
   </div>
+
   <div class="row text-center">
-  <div class="col-6 col-sm-3 mb-2">
-    <button class="topbtns w-100">Print Stock </button>
+    <div class="col-6 col-sm-3 mb-2">
+      <button class="topbtns w-100" (click)="toReports()">Print Stock</button>
+    </div>
+    <div class="col-6 col-sm-3 mb-2">
+      <button class="topbtns w-100" (click)="tovCombos()">Combos</button>
+    </div>
+    <div class="col-6 col-sm-3 mb-2">
+      <button class="topbtns w-100" (click)="tovMenuItems()">Menu Items</button>
+    </div>
+    <div class="col-6 col-sm-3 mb-2">
+      <button class="topbtns w-100" (click)="tovitems()">Items</button>
+    </div>
   </div>
-  <div class="col-6 col-sm-3 mb-2">
-    <button class="topbtns w-100" (click)="tovCombos()">Combos</button>
-  </div>
-  <div class="col-6 col-sm-3 mb-2">
-    <button class="topbtns w-100" (click)="tovMenuItems()">Menu Items</button>
-  </div>
-  <div class="col-6 col-sm-3 mb-2">
-    <button class="topbtns w-100" (click)="tovitems()">Items</button>
-  </div>
-</div>
 
   <br />
+  <!--items-->
   <div class="row">
     <div class="table-container">
       <div class="row">
@@ -70,6 +72,7 @@
       </table>
     </div>
   </div>
+  <!--combos & menu items-->
   <div class="row">
     <div class="table-container">
       <div class="row">
