@@ -6,7 +6,7 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+
 }
 
 /* Glossy blurry circles only at the top */

@@ -38,7 +38,7 @@ export class MitemComponent implements OnInit {
       this.itemService.getItemByCode(code).subscribe((item) => {
         if (item) this.item = item;
       });
-
+    
       this.itemService.getItemEntries(code).subscribe((entries) => {
         this.entries = entries;
       });

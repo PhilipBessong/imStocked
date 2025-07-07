@@ -74,13 +74,14 @@
   margin: 20px auto;
   border-collapse: separate; /* Ensure separation between borders */
   border-spacing: 0; /* Ensure no gaps between cells */
+  
 }
 
 table {
   width: 100%;
   border-collapse: separate; /* Use 'separate' to allow rounding */
   border-radius: 20px; /* Round the corners of the table */
-  overflow: hidden; /* Ensure child elements don't overflow */
+
   border: none; /* Remove borders */
 }
 
